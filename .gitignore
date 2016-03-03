@@ -1,0 +1,5 @@
+/WebApiDavExtension.example/bin
+/WebApiDavExtension.example/obj/Debug
+/*.user
+/WebApiDavExtension/bin/Debug
+/WebApiDavExtension/obj/Debug
