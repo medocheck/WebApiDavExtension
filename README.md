@@ -3,6 +3,8 @@
 *this extension is in an early development state*
 *only CalDav is already implemented*
 
+An extension for the .Net WebApi to communicate with Dav (CalDav) clients.
+
 **tested with**
 * Thunderbird Lightning
 * Android CalDav-sync
