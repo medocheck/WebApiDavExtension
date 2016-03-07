@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using log4net;
+using WebApiDavExtension.CalDav;
 using WebApiDavExtension.Configuration;
 
 namespace WebApiDavExtension.WebDav
@@ -190,6 +191,18 @@ namespace WebApiDavExtension.WebDav
             }
         }
 
+        public virtual IHttpActionResult Put(string path, ICalendarResource resource)
+        {
+            bool success = AddResource(path, resource);
+
+            if (!success)
+            {
+                return BadRequest("Could not save appointment");
+            }
+
+            return Ok();
+        }
+
         /// <summary>
         /// Handles all GET requests
         /// </summary>
@@ -256,6 +269,8 @@ namespace WebApiDavExtension.WebDav
         {
             return Request.CreateResponse(HttpStatusCode.Created);
         }
+
+        public abstract bool AddResource(string path, IDavResource resource);
 
         /// <summary>
         /// Load the requested Resource

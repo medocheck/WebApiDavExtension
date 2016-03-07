@@ -25,6 +25,11 @@ namespace WebApiDavExtension.example.Controllers
             return _repository.GetCalendar(principalId, calendarId);
         }
 
+        public override bool AddEvent(string principalId, string calendarId, ICalendarResource resource)
+        {
+            return true;
+        }
+
         public override ICalendarResource LoadEvent(string principalId, string calendarId, string eventId)
         {
             return _repository.GetEventById(principalId, calendarId, eventId);

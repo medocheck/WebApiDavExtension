@@ -2,6 +2,7 @@
 using WebApiDavExtension.Authentication;
 using WebApiDavExtension.CalDav;
 using WebApiDavExtension.example.Models;
+using WebApiDavExtension.WebDav;
 
 namespace WebApiDavExtension.example.Controllers
 {
@@ -13,6 +14,11 @@ namespace WebApiDavExtension.example.Controllers
         public override IDavPrincipal LoadPrincipal(string principalId)
         {
             return new Principal("/WebDavPrototype/api/Principals/" + principalId, "/WebDavPrototype/api/Calendar/" + principalId);
+        }
+
+        public override bool AddResource(string path, IDavResource resource)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

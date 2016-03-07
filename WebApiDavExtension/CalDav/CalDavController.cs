@@ -7,7 +7,27 @@ namespace WebApiDavExtension.CalDav
 {
 	public abstract class CalDavController : WebDavController
 	{
-        public override IDavResource LoadResource(string path)
+	    public override bool AddResource(string path, IDavResource resource)
+	    {
+            string principalId;
+            string calendarId;
+
+	        if (!(resource is ICalendarResource))
+	        {
+	            throw new ArgumentException("Resource is not a calendar resource");
+	        }
+
+            int found = GetIds(path, out principalId, out calendarId);
+
+	        if (found < 2)
+	        {
+                throw new InvalidOperationException("Calendar is missing");
+            }
+
+	        return AddEvent(principalId, calendarId, (ICalendarResource)resource);
+	    }
+
+	    public override IDavResource LoadResource(string path)
         {
             string[] uriSegments = path.Split("/".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
 
@@ -67,26 +87,35 @@ namespace WebApiDavExtension.CalDav
             throw new InvalidOperationException("Not found");
         }
 
-	    private int GetIds(string path, out string principalId, out string calendarId, out string eventId)
-	    {
-	        principalId = string.Empty;
-	        calendarId = string.Empty;
-	        eventId = string.Empty;
+        private int GetIds(string path, out string principalId, out string calendarId)
+        {
+            principalId = string.Empty;
+            calendarId = string.Empty;
 
-	        int result = 0;
+            int result = 0;
             string[] uriSegments = path.Split("/".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
 
-	        if (uriSegments.Length > 0)
-	        {
-	            principalId = uriSegments[0];
-	            result = 1;
-	        }
+            if (uriSegments.Length > 0)
+            {
+                principalId = uriSegments[0];
+                result = 1;
+            }
 
-	        if (uriSegments.Length > 1)
-	        {
-	            calendarId = uriSegments[1];
+            if (uriSegments.Length > 1)
+            {
+                calendarId = uriSegments[1];
                 result = 2;
             }
+
+            return result;
+        }
+
+        private int GetIds(string path, out string principalId, out string calendarId, out string eventId)
+	    {
+	        eventId = string.Empty;
+
+            string[] uriSegments = path.Split("/".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+            int result = GetIds(path, out principalId, out calendarId);
 
 	        if (uriSegments.Length > 2)
 	        {
@@ -120,6 +149,8 @@ namespace WebApiDavExtension.CalDav
 
 	        return events;
 	    }
+
+	    public abstract bool AddEvent(string principalId, string calendarId, ICalendarResource resource);
 
         /// <summary>
         /// Load the principal with the requested id
