@@ -45,14 +45,14 @@ namespace WebApiDavExtension.WebDav
                 }
 
                 List<Response> responses = new List<Response>();
-                Resource resource = LoadResource(path);
+                IDavResource resource = LoadResource(path);
                 Response mainResponse = propFindRequest.CreateResponse(resource.HRef, resource);
 
                 responses.Add(mainResponse);
 
-                if (propFindRequest.RequestDepth != RequestDepth.Zero && resource is CollectionResource)
+                if (propFindRequest.RequestDepth != RequestDepth.Zero && resource is IDavCollectionResource)
                 {
-                    IEnumerable<Resource> eventList = LoadCollectionResourceChildren(path);
+                    IEnumerable<IDavResource> eventList = LoadCollectionResourceChildren(path);
                     responses.AddRange(
                         eventList.Select(eventResource => propFindRequest.CreateResponse(eventResource.HRef, eventResource)));
                 }
@@ -83,13 +83,13 @@ namespace WebApiDavExtension.WebDav
 
                 foreach (var propertyToUpdatePair in propertyUpdateRequest.PropertiesToUpdate)
                 {
-                    if (!resource.HasProperty(propertyToUpdatePair.Key.LocalName))
+                    if (!ResourcePropertyHelper.HasProperty(resource, propertyToUpdatePair.Key.LocalName))
                     {
                         response.AddForbiddenProperty(propertyToUpdatePair.Key.LocalName, propertyToUpdatePair.Key.NamespaceName);
                         continue;
                     }
 
-                    if (resource.UpdateProperty(propertyToUpdatePair.Key.LocalName, propertyToUpdatePair.Value))
+                    if (ResourcePropertyHelper.UpdateProperty(resource, propertyToUpdatePair.Key.LocalName, propertyToUpdatePair.Value))
                     {
                         response.AddOkProperty(propertyToUpdatePair.Key.LocalName, propertyToUpdatePair.Key.NamespaceName);
                     }
@@ -136,7 +136,7 @@ namespace WebApiDavExtension.WebDav
 
                 LogReportRequest(reportRequest);
 
-                IEnumerable<Resource> resources = reportRequest.Type == ReportRequestType.CalendarQuery
+                IEnumerable<IDavResource> resources = reportRequest.Type == ReportRequestType.CalendarQuery
                     ? QueryResources(path, reportRequest)
                     : MultigetResources(path, reportRequest);
 
@@ -262,14 +262,14 @@ namespace WebApiDavExtension.WebDav
         /// </summary>
         /// <param name="path">Path to resource</param>
         /// <returns>the requested Resource</returns>
-        public abstract Resource LoadResource(string path);
+        public abstract IDavResource LoadResource(string path);
 
         /// <summary>
         /// Load all children of the requested collection resource
         /// </summary>
         /// <param name="path">Path to resource</param>
         /// <returns>enumerable of all children of the requested collection resource</returns>
-        public abstract IEnumerable<Resource> LoadCollectionResourceChildren(string path);
+        public abstract IEnumerable<IDavResource> LoadCollectionResourceChildren(string path);
 
         /// <summary>
         /// Query resources
@@ -277,7 +277,7 @@ namespace WebApiDavExtension.WebDav
         /// <param name="path"></param>
         /// <param name="reportRequest"></param>
         /// <returns>enumerable of requested resources</returns>
-        public abstract IEnumerable<Resource> QueryResources(string path, ReportRequest reportRequest);
+        public abstract IEnumerable<IDavResource> QueryResources(string path, ReportRequest reportRequest);
 
         /// <summary>
         /// Multiget requested resources
@@ -285,6 +285,6 @@ namespace WebApiDavExtension.WebDav
         /// <param name="path"></param>
         /// <param name="reportRequest"></param>
         /// <returns>enumerable of requested resources</returns>
-        public abstract IEnumerable<Resource> MultigetResources(string path, ReportRequest reportRequest);
+        public abstract IEnumerable<IDavResource> MultigetResources(string path, ReportRequest reportRequest);
     }
 }

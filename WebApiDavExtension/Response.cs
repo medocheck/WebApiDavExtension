@@ -12,18 +12,18 @@ namespace WebApiDavExtension
 {
 	public class Response
 	{
-	    protected Resource ResponseItem { get; }
+	    protected IDavResource ResponseItem { get; }
         protected bool IsAllPropRequest { get; }
         protected IEnumerable<string> RequestedPropList { get; } = new List<string>();
 
-        public Response(string href, Resource responseItem)
+        public Response(string href, IDavResource responseItem)
 		{
 			HRef = href;
             ResponseItem = responseItem;
             IsAllPropRequest = true;
         }
 
-        public Response(string href, Resource responseItem, IEnumerable<string> requestedPropList)
+        public Response(string href, IDavResource responseItem, IEnumerable<string> requestedPropList)
         {
             HRef = href;
             ResponseItem = responseItem;
@@ -134,13 +134,13 @@ namespace WebApiDavExtension
         {
             foreach (string requestedProp in RequestedPropList)
             {
-                if (!ResponseItem.HasProperty(requestedProp))
+                if (!ResourcePropertyHelper.HasProperty(ResponseItem, requestedProp))
                 {
                     AddNotFoundProperty(requestedProp);
                     continue;
                 }
 
-                var property = ResponseItem.GetProperty(requestedProp);
+                var property = ResourcePropertyHelper.GetProperty(ResponseItem, requestedProp);
                 AddOkProperty(property.Item1, property.Item2);
             }
         }

@@ -24,7 +24,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\..\..\..\..\bin\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -72,11 +72,11 @@
     <Compile Include="CalDavValueProviderFactory.cs" />
     <Compile Include="CalDav\CalDavController.cs" />
     <Compile Include="CalDav\CalDavPrincipalController.cs" />
-    <Compile Include="CalDav\CalendarCollection.cs" />
-    <Compile Include="CalDav\CalendarResource.cs" />
+    <Compile Include="CalDav\ICalendarCollection.cs" />
+    <Compile Include="CalDav\ICalendarResource.cs" />
     <Compile Include="CalDav\HRef.cs" />
+    <Compile Include="CalDav\IDavPrincipal.cs" />
     <Compile Include="CalDav\ParamFilter.cs" />
-    <Compile Include="CalDav\Principal.cs" />
     <Compile Include="CalDav\TextMatch.cs" />
     <Compile Include="CalDav\TimeRange.cs" />
     <Compile Include="Configuration\CalDavConfiguration.cs" />
@@ -103,8 +103,9 @@
     <Compile Include="Response.cs" />
     <Compile Include="Results\AddChallengeOnUnauthorizedResult.cs" />
     <Compile Include="Results\AuthenticationFailureResult.cs" />
-    <Compile Include="WebDav\CollectionResource.cs" />
-    <Compile Include="WebDav\Resource.cs" />
+    <Compile Include="WebDav\IDavCollectionResource.cs" />
+    <Compile Include="WebDav\IDavResource.cs" />
+    <Compile Include="WebDav\ResourcePropertyHelper.cs" />
     <Compile Include="WebDav\WebDavController.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -112,6 +113,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy /Y "$(TargetPath)" $(SolutionDir)NuGet.Packager1\lib</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

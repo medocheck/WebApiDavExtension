@@ -5,14 +5,13 @@ using WebApiDavExtension.CalDav;
 
 namespace WebApiDavExtension.example.Models
 {
-	public class Event : CalendarResource
+	public class Event : ICalendarResource
 	{
-		[PropFind("getcontenttype", Namespace = "DAV:")]
-		public string ContentType { get; } = "text/calendar; charset=utf-8";
-
 		public DDay.iCal.Event CalendarData { get; set; } = new DDay.iCal.Event();
 
-		[PropFind("calendar-data", Namespace = "urn:ietf:params:xml:ns:caldav")]
+        public string ContentType { get; } = "text/calendar; charset=utf-8";
+
+        [PropFind("calendar-data", Namespace = "urn:ietf:params:xml:ns:caldav")]
 		public string CalendarDataString
 		{
 			get
@@ -32,7 +31,10 @@ namespace WebApiDavExtension.example.Models
 			}
 		}
 
-        public override MemoryStream GetOutputData()
+	    public string HRef { get; set; }
+	    public object ETag { get; set; }
+
+	    public MemoryStream GetOutputData()
         {
             var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(CalendarDataString));
             return stream;

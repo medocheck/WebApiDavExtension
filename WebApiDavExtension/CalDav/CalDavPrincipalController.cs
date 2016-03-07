@@ -6,7 +6,7 @@ namespace WebApiDavExtension.CalDav
 {
     public abstract class CalDavPrincipalController : WebDavController
     {
-        public override Resource LoadResource(string path)
+        public override IDavResource LoadResource(string path)
         {
             string[] uriSegments = path.Split("/".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
 
@@ -18,21 +18,21 @@ namespace WebApiDavExtension.CalDav
             return LoadPrincipal(uriSegments[0]);
         }
 
-        public override IEnumerable<Resource> LoadCollectionResourceChildren(string path)
+        public override IEnumerable<IDavResource> LoadCollectionResourceChildren(string path)
         {
             return new[] {LoadResource(path) };
         }
 
-        public override IEnumerable<Resource> QueryResources(string path, ReportRequest reportRequest)
+        public override IEnumerable<IDavResource> QueryResources(string path, ReportRequest reportRequest)
         {
             return new [] { LoadResource(path) };
         }
 
-        public override IEnumerable<Resource> MultigetResources(string path, ReportRequest reportRequest)
+        public override IEnumerable<IDavResource> MultigetResources(string path, ReportRequest reportRequest)
         {
             return new[] { LoadResource(path) };
         }
 
-        public abstract Principal LoadPrincipal(string principalId);
+        public abstract IDavPrincipal LoadPrincipal(string principalId);
     }
 }

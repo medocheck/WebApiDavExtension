@@ -7,7 +7,7 @@ namespace WebApiDavExtension.CalDav
 {
 	public abstract class CalDavController : WebDavController
 	{
-        public override Resource LoadResource(string path)
+        public override IDavResource LoadResource(string path)
         {
             string[] uriSegments = path.Split("/".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
 
@@ -29,13 +29,13 @@ namespace WebApiDavExtension.CalDav
             return LoadPrincipal(uriSegments[0]);
         }
 
-        public override IEnumerable<Resource> LoadCollectionResourceChildren(string path)
+        public override IEnumerable<IDavResource> LoadCollectionResourceChildren(string path)
         {
             string[] uriSegments = path.Split('/');
-            return LoadEventsFromCalendar(uriSegments[0], uriSegments[1]).Cast<Resource>().ToList();
+            return LoadEventsFromCalendar(uriSegments[0], uriSegments[1]).Cast<IDavResource>().ToList();
         }
 
-	    public override IEnumerable<Resource> QueryResources(string path, ReportRequest reportRequest)
+	    public override IEnumerable<IDavResource> QueryResources(string path, ReportRequest reportRequest)
 	    {
 	        string principalId;
 	        string calendarId;
@@ -51,7 +51,7 @@ namespace WebApiDavExtension.CalDav
             throw new InvalidOperationException("Not found");
         }
 
-	    public override IEnumerable<Resource> MultigetResources(string path, ReportRequest reportRequest)
+	    public override IEnumerable<IDavResource> MultigetResources(string path, ReportRequest reportRequest)
 	    {
             string principalId;
             string calendarId;
@@ -97,9 +97,9 @@ namespace WebApiDavExtension.CalDav
 	        return result;
 	    }
 
-	    public virtual IEnumerable<CalendarResource> CalendarQuery(string principalId, string calendarId, ReportRequest reportRequest)
+	    public virtual IEnumerable<ICalendarResource> CalendarQuery(string principalId, string calendarId, ReportRequest reportRequest)
 	    {
-	        List<CalendarResource> events = new List<CalendarResource>();
+	        List<ICalendarResource> events = new List<ICalendarResource>();
 
             if (reportRequest.TimeRangeFilter != null)
             {
@@ -126,7 +126,7 @@ namespace WebApiDavExtension.CalDav
         /// </summary>
         /// <param name="principalId">the id of the principal</param>
         /// <returns>the principal collection</returns>
-        public abstract CalendarCollection LoadPrincipal(string principalId);
+        public abstract ICalendarCollection LoadPrincipal(string principalId);
 
         /// <summary>
         /// Load the requested calendar collection
@@ -134,7 +134,7 @@ namespace WebApiDavExtension.CalDav
         /// <param name="principalId">the id of the principal</param>
         /// <param name="calendarId">the id of the calendar</param>
         /// <returns>the requested calendar collection</returns>
-        public abstract CalendarCollection LoadCalendar(string principalId, string calendarId);
+        public abstract ICalendarCollection LoadCalendar(string principalId, string calendarId);
 
         /// <summary>
         /// Load the event
@@ -143,7 +143,7 @@ namespace WebApiDavExtension.CalDav
         /// <param name="calendarId">the id of the calendar</param>
         /// <param name="eventId">the id of the event</param>
         /// <returns>the requectes event resource</returns>
-        public abstract CalendarResource LoadEvent(string principalId, string calendarId, string eventId);
+        public abstract ICalendarResource LoadEvent(string principalId, string calendarId, string eventId);
 
         /// <summary>
         /// Load all events from calendar
@@ -151,7 +151,7 @@ namespace WebApiDavExtension.CalDav
         /// <param name="principalId">the id of the principal</param>
         /// <param name="calendarId">the id of the calendar</param>
         /// <returns></returns>
-        public abstract IEnumerable<CalendarResource> LoadEventsFromCalendar(string principalId, string calendarId);
+        public abstract IEnumerable<ICalendarResource> LoadEventsFromCalendar(string principalId, string calendarId);
 
         /// <summary>
         /// Get multiple calendar resources
@@ -160,7 +160,7 @@ namespace WebApiDavExtension.CalDav
         /// <param name="calendarId">the id of the calendar</param>
         /// <param name="multigetReportRequest">the multiget request</param>
         /// <returns>enumerable list of all requested calendar resources</returns>
-        public abstract IEnumerable<CalendarResource> CalendarMultiget(string principalId, string calendarId, ReportRequest multigetReportRequest);
+        public abstract IEnumerable<ICalendarResource> CalendarMultiget(string principalId, string calendarId, ReportRequest multigetReportRequest);
 
         /// <summary>
         /// Get all events within given time range
@@ -170,7 +170,7 @@ namespace WebApiDavExtension.CalDav
         /// <param name="start">the start date</param>
         /// <param name="end">the end date</param>
         /// <returns>all event resources in the given time range</returns>
-        public abstract IEnumerable<CalendarResource> GetEventsByTimeRange(
+        public abstract IEnumerable<ICalendarResource> GetEventsByTimeRange(
             string principalId, string calendarId, DateTime start, DateTime end);
 
         /// <summary>
@@ -181,7 +181,7 @@ namespace WebApiDavExtension.CalDav
         /// <param name="searchText">the text to match against</param>
         /// <param name="negateCondition">is the condition negated</param>
         /// <returns>enumerable list of all found event resources</returns>
-        public abstract IEnumerable<CalendarResource> GetEventsByTextMatch(
+        public abstract IEnumerable<ICalendarResource> GetEventsByTextMatch(
             string principalId, string calendarId, string searchText, bool negateCondition);
 
 	}

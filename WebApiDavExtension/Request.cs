@@ -9,7 +9,7 @@ namespace WebApiDavExtension
         public bool IsAllPropRequest { get; internal set; } = false;
         public List<string> RequestedPropList { get; } = new List<string>();
 
-        public virtual Response CreateResponse(string href, Resource responseItem)
+        public virtual Response CreateResponse(string href, IDavResource responseItem)
         {
             var response = new Response(href, responseItem, RequestedPropList);
             response.CreateXElement();

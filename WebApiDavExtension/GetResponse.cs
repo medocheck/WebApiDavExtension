@@ -16,12 +16,12 @@ namespace WebApiDavExtension
         public string HRef { get; set; }
         public HttpStatusCode Status { get; set; }
 
-        private readonly Resource _responseItem;
+        private readonly IDavResource _responseItem;
         private readonly HttpRequestMessage _request;
 
         private readonly XDocument _collectionResponse;
 
-        public GetResponse(string href, HttpRequestMessage request, Resource responseItem)
+        public GetResponse(string href, HttpRequestMessage request, IDavResource responseItem)
 		{
             HRef = href;
             Status = HttpStatusCode.OK;
@@ -34,7 +34,7 @@ namespace WebApiDavExtension
 
         public Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
         {
-            if (_responseItem is CollectionResource)
+            if (_responseItem is IDavCollectionResource)
             {
                 CreateCollectionResponse();
                 return ExecuteCollectionAsync();
@@ -47,12 +47,12 @@ namespace WebApiDavExtension
         }
         private void CreateCollectionResponse()
         {
-            var collectionResource = _responseItem as CollectionResource;
+            var collectionResource = _responseItem as IDavCollectionResource;
             var collectionElement = new XElement("collection");
 
             if (collectionResource != null)
             {
-                foreach (Resource resource in collectionResource.Resources)
+                foreach (IDavResource resource in collectionResource.Resources)
                 {
                     var hrefAttribute = new XAttribute("href", resource.HRef);
                     var resourceElement = new XElement("resource", hrefAttribute);

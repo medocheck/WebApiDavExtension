@@ -69,8 +69,7 @@ namespace WebApiDavExtension.example.Repository
 	    {
 	        return new Principal("/WebDavPrototype/api/Principals/Maddin", "/WebDavPrototype/api/Calendar/Maddin/standard")
 	        {
-	            DisplayName = "Maddin",
-                CalendarColor = "#FF4444"
+	            DisplayName = "Maddin"
 	        };
 	    }
 
