@@ -15,6 +15,11 @@ namespace WebApiDavExtension.example.Controllers
 	{
 		readonly CalendarRepository _repository = new CalendarRepository();
 
+        public override bool AddCalendar(string principalId, string calendarId, MkCalendarRequest request)
+        {
+            return true;
+        }
+
         public override ICalendarCollection LoadPrincipal(string principalId)
         {
             return _repository.GetPrincipalCalendars(principalId).FirstOrDefault();

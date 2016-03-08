@@ -1,12 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web.Http;
 using WebApiDavExtension.WebDav;
 
 namespace WebApiDavExtension.CalDav
 {
 	public abstract class CalDavController : WebDavController
 	{
+        [AcceptVerbs("MKCALENDAR")]
+        public virtual IHttpActionResult MkCalendar(string path, MkCalendarRequest request)
+	    {
+            string principalId;
+            string calendarId;
+
+            int found = GetIds(path, out principalId, out calendarId);
+
+            if (found < 2)
+            {
+                throw new InvalidOperationException("Calendar is missing");
+            }
+
+            bool success = AddCalendar(principalId, calendarId, request);
+
+            if (!success)
+            {
+                return BadRequest("Could not save appointment");
+            }
+
+            return Ok();
+        }
+
 	    public override bool AddResource(string path, IDavResource resource)
 	    {
             string principalId;
@@ -149,6 +173,8 @@ namespace WebApiDavExtension.CalDav
 
 	        return events;
 	    }
+
+	    public abstract bool AddCalendar(string principalId, string calendarId, MkCalendarRequest request);
 
 	    public abstract bool AddEvent(string principalId, string calendarId, ICalendarResource resource);
 
