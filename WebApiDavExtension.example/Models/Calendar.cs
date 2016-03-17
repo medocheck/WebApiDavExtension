@@ -23,22 +23,31 @@ namespace WebApiDavExtension.example.Models
 
         private CalDavConfiguration ServerConfiguration => (CalDavConfiguration)ConfigurationManager.GetSection("calDavConfiguration");
 
+        [PropFind("current-user-principal", Namespace = "DAV:", IsComplex = true)]
         public HRef CurrentUserPrincipal { get; set; }
 
+        [PropFind("owner", Namespace = "DAV:", IsComplex = true)]
         public HRef Owner { get; set; }
 
+        [PropFind("getctag", Namespace = "http://calendarserver.org/ns/")]
         public object CTag { get; set; }
 
+        [PropFind("resourcetype", Namespace = "DAV:", IsList = true)]
         public XElement[] ResourceType => new[] { new XElement(XNamespace.Get("DAV:") + "collection"), new XElement(XNamespace.Get("urn:ietf:params:xml:ns:caldav") + "calendar") };
 
+        [PropFind("supported-calendar-component-set", Namespace = "urn:ietf:params:xml:ns:caldav", IsList = true)]
         public List<CalendarComponent> SupportedCalendarComponentSet => ServerConfiguration.SupportedCalendarComponents;
 
+        [PropFind("supported-report-set", Namespace = "DAV:", IsList = true)]
         public List<ReportType> SupportedReportSet { get; }
 
+        [PropFind("current-user-privilege-set", Namespace = "DAV:")]
         public XElement CurrentUserPrivilegeSet => ServerConfiguration.CurrentUserPrivilegeSet;
 
+        [PropFind("calendar-color", Namespace = "http://apple.com/ns/ical/")]
         public string CalendarColor { get; set; }
 
+        [PropFind("calendar-timezone", Namespace = "urn:ietf:params:xml:ns:caldav")]
         public string TimezoneString
         {
             get

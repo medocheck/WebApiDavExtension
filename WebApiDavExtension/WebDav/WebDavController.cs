@@ -4,7 +4,9 @@ using System.Configuration;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Web.Http;
+using System.Web.Http.Results;
 using log4net;
 using WebApiDavExtension.CalDav;
 using WebApiDavExtension.Configuration;
@@ -191,17 +193,20 @@ namespace WebApiDavExtension.WebDav
             }
         }
 
-        public virtual IHttpActionResult Put(string path, ICalendarResource resource)
-        {
-            bool success = AddResource(path, resource);
+        //[AcceptVerbs("PUT")]
+        //public virtual IHttpActionResult Put(string path, object resource)
+        //{
+        //    Log.Debug("PUT \t HRef: " + path);
 
-            if (!success)
-            {
-                return BadRequest("Could not save appointment");
-            }
+        //    bool success = AddResource(path, resource);
 
-            return Ok();
-        }
+        //    if (!success)
+        //    {
+        //        return BadRequest("Could not save appointment");
+        //    }
+
+        //    return Ok();
+        //}
 
         /// <summary>
         /// Handles all GET requests
@@ -265,12 +270,25 @@ namespace WebApiDavExtension.WebDav
         /// returns an http created status
         /// </summary>
         /// <returns></returns>
-        public HttpResponseMessage CalendarCreated()
+        //public HttpResponseMessage Created()
+        //{
+        //    return Request.CreateResponse(HttpStatusCode.Created);
+        //}
+
+        public IHttpActionResult Created()
         {
-            return Request.CreateResponse(HttpStatusCode.Created);
+            var response = Request.CreateResponse(HttpStatusCode.Created);
+
+            if (response.Content == null)
+            {
+                response.Content = new StringContent(string.Empty);
+            }
+
+            response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/calendar");
+            return ResponseMessage(response);
         }
 
-        public abstract bool AddResource(string path, IDavResource resource);
+        //public abstract bool AddResource(string path, object resource);
 
         /// <summary>
         /// Load the requested Resource

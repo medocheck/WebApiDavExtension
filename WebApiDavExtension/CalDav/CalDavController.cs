@@ -2,12 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
+using DDay.iCal;
+using log4net;
 using WebApiDavExtension.WebDav;
 
 namespace WebApiDavExtension.CalDav
 {
 	public abstract class CalDavController : WebDavController
 	{
+        private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         [AcceptVerbs("MKCALENDAR")]
         public virtual IHttpActionResult MkCalendar(string path, MkCalendarRequest request)
 	    {
@@ -31,25 +35,41 @@ namespace WebApiDavExtension.CalDav
             return Ok();
         }
 
-	    public override bool AddResource(string path, IDavResource resource)
+        [AcceptVerbs("PUT")]
+        public virtual IHttpActionResult Put(string path, IICalendar resource)
+        {
+            Log.Debug("PUT \t HRef: " + path);
+
+            bool success = AddResource(path, resource);
+
+            if (!success)
+            {
+                return BadRequest("Could not save appointment");
+            }
+
+            return Created();
+        }
+
+        public bool AddResource(string path, IICalendar resource)
 	    {
             string principalId;
             string calendarId;
+            string eventId;
 
-	        if (!(resource is ICalendarResource))
-	        {
-	            throw new ArgumentException("Resource is not a calendar resource");
-	        }
-
-            int found = GetIds(path, out principalId, out calendarId);
+            int found = GetIds(path, out principalId, out calendarId, out eventId);
 
 	        if (found < 2)
 	        {
                 throw new InvalidOperationException("Calendar is missing");
             }
 
-	        return AddEvent(principalId, calendarId, (ICalendarResource)resource);
-	    }
+            if (found > 2)
+            {
+                return AddEvent(principalId, calendarId, eventId, resource);
+            }
+
+            return AddEvent(principalId, calendarId, resource);
+        }
 
 	    public override IDavResource LoadResource(string path)
         {
@@ -144,6 +164,12 @@ namespace WebApiDavExtension.CalDav
 	        if (uriSegments.Length > 2)
 	        {
 	            eventId = uriSegments[2];
+
+	            if (eventId.EndsWith(".ics"))
+	            {
+	                eventId = eventId.Substring(0, eventId.LastIndexOf(".ics", StringComparison.Ordinal));
+	            }
+
                 result = 3;
             }
 
@@ -166,17 +192,16 @@ namespace WebApiDavExtension.CalDav
                     reportRequest.TextMatchFilter.NegateCondition));
             }
 
-	        //if (reportRequest.ParamFilter != null)
-	        //{
-	        //    events.AddRange();
-	        //}
-
 	        return events;
 	    }
 
 	    public abstract bool AddCalendar(string principalId, string calendarId, MkCalendarRequest request);
 
-	    public abstract bool AddEvent(string principalId, string calendarId, ICalendarResource resource);
+        public abstract bool AddEvent(string principalId, string calendarId, IICalendar resource);
+
+        public abstract bool AddEvent(string principalId, string calendarId, string eventId, IICalendar resource);
+
+        public abstract bool AddEvent(string principalId, string calendarId, ICalendarResource resource);
 
         /// <summary>
         /// Load the principal with the requested id

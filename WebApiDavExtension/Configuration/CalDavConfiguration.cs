@@ -11,7 +11,10 @@ namespace WebApiDavExtension.Configuration
 	{
 		private static readonly XmlSerializer XmlSerializer = new XmlSerializer(typeof(CalDavConfiguration));
 
-		[XmlAttribute("davHeader")]
+        [XmlAttribute("href")]
+        public string HRef { get; set; }
+
+        [XmlAttribute("davHeader")]
 		public string DavHeader { get; set; }
 
 		[XmlArray("supported-calendar-component-set")]

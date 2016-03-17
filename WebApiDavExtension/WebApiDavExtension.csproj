@@ -79,10 +79,12 @@
     <Compile Include="CalDav\ParamFilter.cs" />
     <Compile Include="CalDav\TextMatch.cs" />
     <Compile Include="CalDav\TimeRange.cs" />
+    <Compile Include="CalendarMediaFormatter.cs" />
     <Compile Include="Configuration\CalDavConfiguration.cs" />
     <Compile Include="Configuration\CalDavConfigurationSectionHandler.cs" />
     <Compile Include="Configuration\CalendarComponent.cs" />
     <Compile Include="Configuration\ReportType.cs" />
+    <Compile Include="CustomBodyModelValidator.cs" />
     <Compile Include="GetResponse.cs" />
     <Compile Include="MkCalendarRequest.cs" />
     <Compile Include="MkCalendarRequestModelBinder.cs" />
