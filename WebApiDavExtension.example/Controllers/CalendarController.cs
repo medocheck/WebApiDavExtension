@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
+using DDay.iCal;
 using WebApiDavExtension.Authentication;
 using WebApiDavExtension.CalDav;
 using WebApiDavExtension.example.Repository;
@@ -16,6 +17,16 @@ namespace WebApiDavExtension.example.Controllers
 		readonly CalendarRepository _repository = new CalendarRepository();
 
         public override bool AddCalendar(string principalId, string calendarId, MkCalendarRequest request)
+        {
+            return true;
+        }
+
+        public override bool AddEvent(string principalId, string calendarId, IICalendar resource)
+        {
+            return true;
+        }
+
+        public override bool AddEvent(string principalId, string calendarId, string eventId, IICalendar resource)
         {
             return true;
         }
