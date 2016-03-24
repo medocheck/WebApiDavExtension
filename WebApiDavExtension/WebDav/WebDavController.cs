@@ -6,9 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Web.Http;
-using System.Web.Http.Results;
 using log4net;
-using WebApiDavExtension.CalDav;
 using WebApiDavExtension.Configuration;
 
 namespace WebApiDavExtension.WebDav
@@ -230,6 +228,30 @@ namespace WebApiDavExtension.WebDav
         }
 
         /// <summary>
+        /// Handle DELETE requests
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        [AcceptVerbs("DELETE")]
+        public virtual IHttpActionResult Delete(string path)
+        {
+            try
+            {
+                if (RemoveResourse(path))
+                {
+                    return Ok();
+                }
+
+                return NotFound();
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error in DELETE", exception);
+                return InternalServerError(exception);
+            }
+        }
+
+        /// <summary>
         /// Returns a Http 200 Ok result
         /// </summary>
         /// <param name="allow"></param>
@@ -319,5 +341,12 @@ namespace WebApiDavExtension.WebDav
         /// <param name="reportRequest"></param>
         /// <returns>enumerable of requested resources</returns>
         public abstract IEnumerable<IDavResource> MultigetResources(string path, ReportRequest reportRequest);
+
+        /// <summary>
+        /// Delete a resource
+        /// </summary>
+        /// <param name="path">Path to the respurce</param>
+        /// <returns>true if resource was deleted; otherwise false</returns>
+        public abstract bool RemoveResourse(string path);
     }
 }

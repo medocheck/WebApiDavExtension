@@ -14,5 +14,10 @@ namespace WebApiDavExtension.example.Controllers
         {
             return new Principal("/WebDavPrototype/api/Principals/" + principalId, "/WebDavPrototype/api/Calendar/" + principalId);
         }
+
+        public override bool RemoveResourse(string path)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

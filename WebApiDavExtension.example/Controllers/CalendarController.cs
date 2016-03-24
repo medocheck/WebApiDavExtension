@@ -70,6 +70,11 @@ namespace WebApiDavExtension.example.Controllers
         public override IEnumerable<ICalendarResource> GetEventsByTimeRange(string principalId, string calendarId, DateTime start, DateTime end)
         {
             return _repository.GetEvents(calendarId, principalId);
-        } 
+        }
+
+        public override bool RemoveEvent(string principalId, string calendarId, string eventId)
+        {
+            throw new NotImplementedException();
+        }
 	}
 }

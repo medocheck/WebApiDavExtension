@@ -131,7 +131,23 @@ namespace WebApiDavExtension.CalDav
             throw new InvalidOperationException("Not found");
         }
 
-        private int GetIds(string path, out string principalId, out string calendarId)
+	    public override bool RemoveResourse(string path)
+	    {
+            string principalId;
+            string calendarId;
+            string eventId;
+
+            int found = GetIds(path, out principalId, out calendarId, out eventId);
+
+            if (found >= 3)
+            {
+                return RemoveEvent(principalId, calendarId, eventId);
+            }
+
+            throw new InvalidOperationException("Not found");
+        }
+
+	    private int GetIds(string path, out string principalId, out string calendarId)
         {
             principalId = string.Empty;
             calendarId = string.Empty;
@@ -266,5 +282,13 @@ namespace WebApiDavExtension.CalDav
         public abstract IEnumerable<ICalendarResource> GetEventsByTextMatch(
             string principalId, string calendarId, string searchText, bool negateCondition);
 
-	}
+        /// <summary>
+        /// Delete an event
+        /// </summary>
+        /// <param name="principalId">the id of the principal</param>
+        /// <param name="calendarId">the id of the calendar</param>
+        /// <param name="eventId">the id of the event</param>
+        /// <returns>true if event was deleted; otherwise false</returns>
+        public abstract bool RemoveEvent(string principalId, string calendarId, string eventId);
+    }
 }
