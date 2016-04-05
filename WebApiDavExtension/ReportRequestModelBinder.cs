@@ -20,7 +20,9 @@ namespace WebApiDavExtension
                 ? ReportRequestType.CalendarQuery
                 : document.Root.Name.LocalName == "calendar-multiget"
                     ? ReportRequestType.Multiget
-                    : ReportRequestType.PrincipalSearchPropertySet;
+                    : document.Root.Name.LocalName == "principal-search-property-set"
+                        ? ReportRequestType.PrincipalSearchPropertySet
+                        : ReportRequestType.SyncCollection;
 
             var eventFilter = from f in document.Descendants(Namespaces.Caldav + "comp-filter")
                               where f.Attribute("name").Value == "VEVENT"
@@ -32,6 +34,11 @@ namespace WebApiDavExtension
             {
                 CreateFilter(elements);
             }
+
+		    if (Model.Type == ReportRequestType.SyncCollection)
+		    {
+		        HandleSyncReport(document);
+		    }
 
 		    if (document.Root == null)
 		    {
@@ -45,6 +52,27 @@ namespace WebApiDavExtension
 
 		    return true;
 		}
+
+	    private void HandleSyncReport(XDocument document)
+	    {
+	        var syncTokenElement = document.Descendants(Namespaces.Dav + "sync-token").FirstOrDefault();
+	        var syncLevelElement = document.Descendants(Namespaces.Dav + "sync-level").FirstOrDefault();
+
+	        if (syncTokenElement != null)
+	        {
+	            Model.SyncToken = syncTokenElement.Value;
+	        }
+
+	        if (syncLevelElement != null)
+	        {
+	            int syncLevel;
+
+	            if (int.TryParse(syncLevelElement.Value, out syncLevel))
+	            {
+	                Model.SyncLevel = syncLevel;
+	            }
+	        }
+	    }
 
 	    private void CreateFilter(IList<XElement> elements)
 	    {

@@ -9,6 +9,9 @@ namespace WebApiDavExtension
 	{
 		public  ReportRequestType Type { get; internal set; }
 
+        public string SyncToken { get; set; }
+        public int SyncLevel { get; set; }
+
 		public List<string> RequestedCalendarProperties { get; set; }
 		public List<string> RequestedEventProperties { get; set; }
 		public TimeRange TimeRangeFilter { get; set; }

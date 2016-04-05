@@ -4,6 +4,7 @@ namespace WebApiDavExtension
     {
         CalendarQuery,
         Multiget,
-        PrincipalSearchPropertySet
+        PrincipalSearchPropertySet,
+        SyncCollection
     }
 }

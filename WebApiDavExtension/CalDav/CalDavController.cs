@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Resources;
 using System.Web.Http;
 using DDay.iCal;
 using log4net;
@@ -211,7 +212,37 @@ namespace WebApiDavExtension.CalDav
 	        return events;
 	    }
 
-	    public abstract bool AddCalendar(string principalId, string calendarId, MkCalendarRequest request);
+	    public override string LoadCurrentSyncToken(string path)
+	    {
+            string principalId;
+            string calendarId;
+
+            int found = GetIds(path, out principalId, out calendarId);
+
+	        if (found < 2)
+	        {
+	            throw new Exception("Calendar not found");
+	        }
+
+	        return LoadCurrentSyncToken(principalId, calendarId);
+	    }
+
+	    public override IEnumerable<IDavResource> LoadResourcesBySyncToken(string path, string token)
+        {
+            string principalId;
+            string calendarId;
+
+            int found = GetIds(path, out principalId, out calendarId);
+
+            if (found < 2)
+            {
+                throw new Exception("Calendar not found");
+            }
+
+            return LoadResourcesBySyncToken(principalId, calendarId, token);
+        }
+
+        public abstract bool AddCalendar(string principalId, string calendarId, MkCalendarRequest request);
 
         public abstract bool AddEvent(string principalId, string calendarId, IICalendar resource);
 
@@ -281,6 +312,23 @@ namespace WebApiDavExtension.CalDav
         /// <returns>enumerable list of all found event resources</returns>
         public abstract IEnumerable<ICalendarResource> GetEventsByTextMatch(
             string principalId, string calendarId, string searchText, bool negateCondition);
+
+        /// <summary>
+        /// Get the current sync token
+        /// </summary>
+        /// <param name="principalId">the id of the principal</param>
+        /// <param name="calendarId">the id of the calendar</param>
+        /// <returns></returns>
+	    public abstract string LoadCurrentSyncToken(string principalId, string calendarId);
+
+        /// <summary>
+        /// Get all changed events after the given sync token
+        /// </summary>
+        /// <param name="principalId">the id of the principal</param>
+        /// <param name="calendarId">the id of the calendar</param>
+        /// <param name="token">the sync token</param>
+        /// <returns></returns>
+        public abstract IEnumerable<ICalendarResource> LoadResourcesBySyncToken(string principalId, string calendarId, string token);
 
         /// <summary>
         /// Delete an event

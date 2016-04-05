@@ -137,6 +137,15 @@ namespace WebApiDavExtension.WebDav
 
                 LogReportRequest(reportRequest);
 
+                if (reportRequest.Type == ReportRequestType.SyncCollection)
+                {
+                    var syncToken = LoadCurrentSyncToken(path);
+                    var syncResources = LoadResourcesBySyncToken(path, reportRequest.SyncToken) ?? new List<IDavResource>();
+
+                    List<Response> syncResponses = syncResources.Select(resource => reportRequest.CreateResponse(resource.HRef, resource)).ToList();
+                    return MultiStatus(syncToken, syncResponses);
+                }
+
                 IEnumerable<IDavResource> resources = reportRequest.Type == ReportRequestType.CalendarQuery
                     ? QueryResources(path, reportRequest)
                     : MultigetResources(path, reportRequest);
@@ -190,21 +199,6 @@ namespace WebApiDavExtension.WebDav
                 Log.Debug("\tParamFilter");
             }
         }
-
-        //[AcceptVerbs("PUT")]
-        //public virtual IHttpActionResult Put(string path, object resource)
-        //{
-        //    Log.Debug("PUT \t HRef: " + path);
-
-        //    bool success = AddResource(path, resource);
-
-        //    if (!success)
-        //    {
-        //        return BadRequest("Could not save appointment");
-        //    }
-
-        //    return Ok();
-        //}
 
         /// <summary>
         /// Handles all GET requests
@@ -277,6 +271,17 @@ namespace WebApiDavExtension.WebDav
             return new MultiStatusResponse(responses, Request);
         }
 
+        /// <summary>
+        /// Creates and returns a multistatus response
+        /// </summary>
+        /// <param name="responses"></param>
+        /// <param name="syncToken"></param>
+        /// <returns></returns>
+        public IHttpActionResult MultiStatus(string syncToken, List<Response> responses)
+        {
+            return new MultiStatusResponse(syncToken, responses, Request);
+        }
+
 
         /// <summary>
         /// Creates an returns a PrincipalSearchPropertySet response
@@ -310,8 +315,6 @@ namespace WebApiDavExtension.WebDav
             return ResponseMessage(response);
         }
 
-        //public abstract bool AddResource(string path, object resource);
-
         /// <summary>
         /// Load the requested Resource
         /// </summary>
@@ -341,6 +344,21 @@ namespace WebApiDavExtension.WebDav
         /// <param name="reportRequest"></param>
         /// <returns>enumerable of requested resources</returns>
         public abstract IEnumerable<IDavResource> MultigetResources(string path, ReportRequest reportRequest);
+
+        /// <summary>
+        /// Get the current sync token
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public abstract string LoadCurrentSyncToken(string path);
+
+        /// <summary>
+        /// Get all changed resources after the given sync token
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public abstract IEnumerable<IDavResource> LoadResourcesBySyncToken(string path, string token); 
 
         /// <summary>
         /// Delete a resource

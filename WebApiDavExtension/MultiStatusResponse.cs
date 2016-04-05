@@ -12,6 +12,8 @@ namespace WebApiDavExtension
 	public class MultiStatusResponse : IHttpActionResult
 	{
 		private readonly HttpRequestMessage _request;
+	    private readonly string _syncToken;
+
 		public List<Response> Responses { get; } = new List<Response>();
 
 		public MultiStatusResponse(HttpRequestMessage request)
@@ -25,7 +27,14 @@ namespace WebApiDavExtension
 			Responses.AddRange(responses);
 		}
 
-		public string GetResponseData()
+        public MultiStatusResponse(string syncToken, List<Response> responses, HttpRequestMessage request)
+        {
+            _request = request;
+            _syncToken = syncToken;
+            Responses.AddRange(responses);
+        }
+
+        public string GetResponseData()
 		{
 			var multiStatusElement = new XElement(Namespaces.Dav + "multistatus");
 			XDocument document = new XDocument(multiStatusElement);
@@ -34,6 +43,11 @@ namespace WebApiDavExtension
 			{
 				multiStatusElement.Add(response.ResponseElement);
 			}
+
+            if (!string.IsNullOrEmpty(_syncToken))
+            {
+                multiStatusElement.Add(new XElement(Namespaces.Dav + "sync-token", _syncToken));
+            }
 
 			return document.ToString();
 		}
