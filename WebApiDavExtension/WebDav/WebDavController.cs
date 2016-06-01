@@ -6,7 +6,9 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Web.Http;
+using System.Web.Http.Results;
 using log4net;
+using WebApiDavExtension.CalDav;
 using WebApiDavExtension.Configuration;
 
 namespace WebApiDavExtension.WebDav
@@ -19,6 +21,51 @@ namespace WebApiDavExtension.WebDav
         protected CalDavConfiguration ServerConfiguration => (CalDavConfiguration)ConfigurationManager.GetSection("calDavConfiguration");
 
         private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+        protected int GetIds(string path, out string principalId, out string calendarId)
+        {
+            principalId = string.Empty;
+            calendarId = string.Empty;
+
+            int result = 0;
+            string[] uriSegments = path.Split("/".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+
+            if (uriSegments.Length > 0)
+            {
+                principalId = uriSegments[0];
+                result = 1;
+            }
+
+            if (uriSegments.Length > 1)
+            {
+                calendarId = uriSegments[1];
+                result = 2;
+            }
+
+            return result;
+        }
+
+        protected int GetIds(string path, out string principalId, out string calendarId, out string eventId)
+        {
+            eventId = string.Empty;
+
+            string[] uriSegments = path.Split("/".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+            int result = GetIds(path, out principalId, out calendarId);
+
+            if (uriSegments.Length > 2)
+            {
+                eventId = uriSegments[2];
+
+                if (eventId.EndsWith(".ics"))
+                {
+                    eventId = eventId.Substring(0, eventId.LastIndexOf(".ics", StringComparison.Ordinal));
+                }
+
+                result = 3;
+            }
+
+            return result;
+        }
 
         [AcceptVerbs("OPTIONS")]
         public virtual HttpResponseMessage Options(string path)
@@ -47,18 +94,26 @@ namespace WebApiDavExtension.WebDav
 
                 List<Response> responses = new List<Response>();
                 IDavResource resource = LoadResource(path);
-                Response mainResponse = propFindRequest.CreateResponse(resource.HRef, resource);
+                
+                string resourceHref = resource?.HRef ?? path;
 
+                Response mainResponse = propFindRequest.CreateResponse(resourceHref, resource, false);
                 responses.Add(mainResponse);
 
-                if (propFindRequest.RequestDepth != RequestDepth.Zero && resource is IDavCollectionResource)
+                if (propFindRequest.RequestDepth != RequestDepth.Zero && (resource is IDavCollectionResource || resource == null))
                 {
                     IEnumerable<IDavResource> eventList = LoadCollectionResourceChildren(path);
                     responses.AddRange(
-                        eventList.Select(eventResource => propFindRequest.CreateResponse(eventResource.HRef, eventResource)));
+                        eventList.Select(
+                            eventResource => propFindRequest.CreateResponse(eventResource.HRef, eventResource)));
                 }
 
                 return MultiStatus(responses);
+            }
+            catch (CalDavPathIsEmptyException exception)
+            {
+                Log.Warn("Path is empty in PROPFIND", exception);
+                return new StatusCodeResult(HttpStatusCode.Forbidden, Request);
             }
             catch (Exception exception)
             {
@@ -105,6 +160,34 @@ namespace WebApiDavExtension.WebDav
             catch (Exception exception)
             {
                 Log.Error("Error in PROPPATCH", exception);
+                return InternalServerError(exception);
+            }
+        }
+
+        /// <summary>
+        /// Handles all REPORT requests without path
+        /// </summary>
+        /// <param name="reportRequest"></param>
+        /// <returns></returns>
+        [AcceptVerbs("REPORT")]
+        public virtual IHttpActionResult Report(ReportRequest reportRequest)
+        {
+            try
+            {
+                Log.Debug("REPORT \t HRef: /");
+
+                if (reportRequest.Type == ReportRequestType.PrincipalSearchPropertySet)
+                {
+                    return
+                        PrincipalSearchPropertySet(
+                            new Tuple<string, string, string>("DAV:", "displayname", "Display name"), new Tuple<string, string, string>("http://medocheck.com", "email-address", "Email address"));
+                }
+
+                return NotFound();
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error in REPORT", exception);
                 return InternalServerError(exception);
             }
         }
@@ -297,11 +380,6 @@ namespace WebApiDavExtension.WebDav
         /// returns an http created status
         /// </summary>
         /// <returns></returns>
-        //public HttpResponseMessage Created()
-        //{
-        //    return Request.CreateResponse(HttpStatusCode.Created);
-        //}
-
         public IHttpActionResult Created()
         {
             var response = Request.CreateResponse(HttpStatusCode.Created);

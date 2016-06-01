@@ -11,7 +11,7 @@ namespace WebApiDavExtension.Authentication
 
         protected override bool IsUserAuthorized(string userName)
         {
-            return true;
+            return false;
         }
 
         protected override string GetPassword(string userName)

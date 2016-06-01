@@ -74,29 +74,44 @@ namespace WebApiDavExtension.CalDav
 
 	    public override IDavResource LoadResource(string path)
         {
-            string[] uriSegments = path.Split("/".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+	        if (string.IsNullOrEmpty(path))
+	        {
+	            return null;
+	        }
 
-            if (uriSegments.Length > 3)
+            string principalId;
+            string calendarId;
+            string eventId;
+
+            int found = GetIds(path, out principalId, out calendarId, out eventId);
+
+            if (found > 3)
             {
                 throw new Exception("Not found");
             }
 
-            if (uriSegments.Length == 3)
+            if (found == 3)
             {
-                return LoadEvent(uriSegments[0], uriSegments[1], uriSegments[2]);
+                return LoadEvent(principalId, calendarId, eventId);
             }
 
-            if (uriSegments.Length == 2)
+            if (found == 2)
             {
-                return LoadCalendar(uriSegments[0], uriSegments[1]);
+                return LoadCalendar(principalId, calendarId);
             }
 
-            return LoadPrincipal(uriSegments[0]);
+	        return LoadCalendar(principalId);
         }
 
         public override IEnumerable<IDavResource> LoadCollectionResourceChildren(string path)
         {
-            string[] uriSegments = path.Split('/');
+            string[] uriSegments = path.Split("/".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+
+            if (uriSegments.Length == 1)
+            {
+                return LoadCalendarsForPrincipal(uriSegments[0]);
+            }
+
             return LoadEventsFromCalendar(uriSegments[0], uriSegments[1]).Cast<IDavResource>().ToList();
         }
 
@@ -118,18 +133,45 @@ namespace WebApiDavExtension.CalDav
 
 	    public override IEnumerable<IDavResource> MultigetResources(string path, ReportRequest reportRequest)
 	    {
-            string principalId;
-            string calendarId;
-            string eventId;
+	        var resources = new List<IDavResource>();
 
-            int found = GetIds(path, out principalId, out calendarId, out eventId);
+	        foreach (var hRef in reportRequest.HRefs)
+	        {
+                string principalId;
+                string calendarId;
+                string eventId;
 
-            if (found >= 2)
-            {
-                return CalendarMultiget(principalId, calendarId, reportRequest);
+                string calendarHRef = hRef.Replace($"{ServerConfiguration.HRef}/Calendar/", "");
+                int found = GetIds(calendarHRef, out principalId, out calendarId, out eventId);
+
+	            if (found == 1)
+	            {
+	                var calendars = LoadCalendarsForPrincipal(principalId);
+
+	                foreach (var calendar in calendars)
+	                {
+	                    var events = LoadEventsFromCalendar(principalId, calendar.ExternalId);
+                        calendar.Resources.AddRange(events);
+
+                        resources.Add(calendar);
+                    }
+	            }
+                else if (found == 2)
+                {
+                    var calendar = LoadCalendar(principalId, calendarId);
+                    var events = LoadEventsFromCalendar(principalId, calendar.ExternalId);
+                    calendar.Resources.AddRange(events);
+
+                    resources.Add(calendar);
+                }
+                else
+                {
+                    var resource = LoadEvent(principalId, calendarId, eventId);
+                    resources.Add(resource);
+                }
             }
 
-            throw new InvalidOperationException("Not found");
+            return resources;
         }
 
 	    public override bool RemoveResourse(string path)
@@ -147,51 +189,6 @@ namespace WebApiDavExtension.CalDav
 
             throw new InvalidOperationException("Not found");
         }
-
-	    private int GetIds(string path, out string principalId, out string calendarId)
-        {
-            principalId = string.Empty;
-            calendarId = string.Empty;
-
-            int result = 0;
-            string[] uriSegments = path.Split("/".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-
-            if (uriSegments.Length > 0)
-            {
-                principalId = uriSegments[0];
-                result = 1;
-            }
-
-            if (uriSegments.Length > 1)
-            {
-                calendarId = uriSegments[1];
-                result = 2;
-            }
-
-            return result;
-        }
-
-        private int GetIds(string path, out string principalId, out string calendarId, out string eventId)
-	    {
-	        eventId = string.Empty;
-
-            string[] uriSegments = path.Split("/".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-            int result = GetIds(path, out principalId, out calendarId);
-
-	        if (uriSegments.Length > 2)
-	        {
-	            eventId = uriSegments[2];
-
-	            if (eventId.EndsWith(".ics"))
-	            {
-	                eventId = eventId.Substring(0, eventId.LastIndexOf(".ics", StringComparison.Ordinal));
-	            }
-
-                result = 3;
-            }
-
-	        return result;
-	    }
 
 	    public virtual IEnumerable<ICalendarResource> CalendarQuery(string principalId, string calendarId, ReportRequest reportRequest)
 	    {
@@ -250,12 +247,26 @@ namespace WebApiDavExtension.CalDav
 
         public abstract bool AddEvent(string principalId, string calendarId, ICalendarResource resource);
 
+        ///// <summary>
+        ///// Load the principal with the requested id
+        ///// </summary>
+        ///// <param name="principalId">the id of the principal</param>
+        ///// <returns>the principal collection</returns>
+        //public abstract IDavPrincipal LoadPrincipal(string principalId);
+
         /// <summary>
-        /// Load the principal with the requested id
+        /// Load the requested calendar collection
         /// </summary>
         /// <param name="principalId">the id of the principal</param>
-        /// <returns>the principal collection</returns>
-        public abstract ICalendarCollection LoadPrincipal(string principalId);
+        /// <returns>the requested calendar collection</returns>
+        public abstract IEnumerable<ICalendarCollection> LoadCalendarsForPrincipal(string principalId);
+
+        /// <summary>
+        /// Load the requested calendar collection
+        /// </summary>
+        /// <param name="principalId">the id of the principal</param>
+        /// <returns>the requested calendar collection</returns>
+        public abstract ICalendarCollection LoadCalendar(string principalId);
 
         /// <summary>
         /// Load the requested calendar collection

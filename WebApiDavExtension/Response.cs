@@ -15,6 +15,7 @@ namespace WebApiDavExtension
 	    protected IDavResource ResponseItem { get; }
         protected bool IsAllPropRequest { get; }
         protected IEnumerable<string> RequestedPropList { get; } = new List<string>();
+	    protected bool ShowEmptyProperties = true;
 
         public Response(string href, IDavResource responseItem)
 		{
@@ -23,11 +24,12 @@ namespace WebApiDavExtension
             IsAllPropRequest = true;
         }
 
-        public Response(string href, IDavResource responseItem, IEnumerable<string> requestedPropList)
+        public Response(string href, IDavResource responseItem, IEnumerable<string> requestedPropList, bool showEmptyProperties)
         {
             HRef = href;
             ResponseItem = responseItem;
             RequestedPropList = requestedPropList;
+            ShowEmptyProperties = showEmptyProperties;
 
             IsAllPropRequest = false;
         }
@@ -113,6 +115,11 @@ namespace WebApiDavExtension
 
         protected IEnumerable<Tuple<object, PropFindAttribute>> GetProperties()
 	    {
+            if (ResponseItem == null)
+            {
+                return new List<Tuple<object, PropFindAttribute>>();
+            }
+
 	        var props = ResponseItem.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(
                 prop => Attribute.IsDefined(prop, typeof(PropFindAttribute))).ToList();
 
@@ -141,14 +148,35 @@ namespace WebApiDavExtension
                 }
 
                 var property = ResourcePropertyHelper.GetProperty(ResponseItem, requestedProp);
-                AddOkProperty(property.Item1, property.Item2);
+
+                if (property == null)
+                {
+                    continue;
+                }
+
+                bool isDefault = IsDefaultValue(property.Item1);
+                bool isNull = property.Item1 == null;
+                bool isEmpty = property.Item1 is string && string.IsNullOrEmpty(property.Item1.ToString()) ||
+                    property.Item1 is Guid && Guid.Empty == (Guid)property.Item1;
+
+                if (ShowEmptyProperties || (!isDefault && !isNull && !isEmpty))
+                {
+                    AddOkProperty(property.Item1, property.Item2);
+                }
+                else
+                {
+                    AddNotFoundProperty(property.Item2.Name);
+                }
             }
+        }
+
+	    private bool IsDefaultValue<T>(T value)
+	    {
+	        return EqualityComparer<T>.Default.Equals(value, default(T));
         }
 
         public void AddNotFoundProperty(string name)
         {
-            //XNamespace xNamespace = propNamespace;
-
             var emptyElement = new XElement(name);
             NotFoundPropElement.Add(emptyElement);
             UpdatePropStatElements();
@@ -206,16 +234,35 @@ namespace WebApiDavExtension
                 return element;
             }
 
+            var namespaceProperty = content.GetType().GetProperty("Namespace");
+            var xmlTypeAttribute = content.GetType().GetCustomAttribute<XmlTypeAttribute>();
+
+            if (namespaceProperty != null && xmlTypeAttribute != null)
+            {
+                string namespaceValue = namespaceProperty.GetValue(content).ToString();
+                string elementName = xmlTypeAttribute.TypeName;
+
+                XNamespace xNamespace = namespaceValue;
+
+                var xElement = new XElement(xNamespace + elementName);
+
+                foreach (var propertyInfo in content.GetType().GetProperties().Where(p => p.Name != "Namespace"))
+                {
+                    var xmlAttribute = propertyInfo.GetCustomAttribute<XmlAttributeAttribute>();
+                    var value = propertyInfo.GetValue(content);
+
+                    xElement.Add(new XAttribute(xmlAttribute.AttributeName, value));
+                }
+
+                return xElement;
+            }
+
             using (var writer = new StringWriter())
             {
                 writer.NewLine = Environment.NewLine;
                 var xmlSerializer = new XmlSerializer(content.GetType());
 
-                XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
-                ns.Add("", "");
-
-                xmlSerializer.Serialize(writer, content, ns);
-
+                xmlSerializer.Serialize(writer, content);
                 XElement xElement = XElement.Parse(writer.ToString());
 
                 return xElement;

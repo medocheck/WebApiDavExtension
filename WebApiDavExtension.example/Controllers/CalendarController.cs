@@ -76,5 +76,15 @@ namespace WebApiDavExtension.example.Controllers
         {
             throw new NotImplementedException();
         }
-	}
+
+        public override string LoadCurrentSyncToken(string principalId, string calendarId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override IEnumerable<ICalendarResource> LoadResourcesBySyncToken(string principalId, string calendarId, string token)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

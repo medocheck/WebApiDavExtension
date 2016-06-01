@@ -20,8 +20,12 @@ namespace WebApiDavExtension.Authentication
 
         private static bool IsAuthenticated => HttpContext.Current.User != null && HttpContext.Current.User.Identity.IsAuthenticated;
 
+        protected HttpActionContext ActionContext { get; private set; }
+
         public override void OnAuthorization(HttpActionContext actionContext)
         {
+            ActionContext = actionContext;
+
             if (IsAuthenticated)
                 return;
 

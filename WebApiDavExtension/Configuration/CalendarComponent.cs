@@ -7,5 +7,8 @@ namespace WebApiDavExtension.Configuration
     {
         [XmlAttribute("name")]
         public string Name { get; set; }
+
+        [XmlAttribute("xml-namespace")]
+        public string Namespace { get; set; } = string.Empty;
     }
 }
