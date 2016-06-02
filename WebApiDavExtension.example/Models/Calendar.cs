@@ -23,7 +23,9 @@ namespace WebApiDavExtension.example.Models
 
         private CalDavConfiguration ServerConfiguration => (CalDavConfiguration)ConfigurationManager.GetSection("calDavConfiguration");
 
-        [PropFind("current-user-principal", Namespace = "DAV:", IsComplex = true)]
+	    public string ExternalId { get; set; }
+
+	    [PropFind("current-user-principal", Namespace = "DAV:", IsComplex = true)]
         public HRef CurrentUserPrincipal { get; set; }
 
         [PropFind("owner", Namespace = "DAV:", IsComplex = true)]

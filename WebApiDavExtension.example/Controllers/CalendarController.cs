@@ -31,11 +31,6 @@ namespace WebApiDavExtension.example.Controllers
             return true;
         }
 
-        public override ICalendarCollection LoadPrincipal(string principalId)
-        {
-            return _repository.GetPrincipalCalendars(principalId).FirstOrDefault();
-        }
-
         public override ICalendarCollection LoadCalendar(string principalId, string calendarId)
         {
             return _repository.GetCalendar(principalId, calendarId);
@@ -83,6 +78,16 @@ namespace WebApiDavExtension.example.Controllers
         }
 
         public override IEnumerable<ICalendarResource> LoadResourcesBySyncToken(string principalId, string calendarId, string token)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override IEnumerable<ICalendarCollection> LoadCalendarsForPrincipal(string principalId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override ICalendarCollection LoadCalendar(string principalId)
         {
             throw new NotImplementedException();
         }
