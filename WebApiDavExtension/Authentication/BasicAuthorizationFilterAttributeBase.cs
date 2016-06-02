@@ -41,7 +41,7 @@ namespace WebApiDavExtension.Authentication
         protected override AuthenticationHeaderValue GetUnauthorizedResponseHeader(HttpActionContext actionContext)
         {
             var host = actionContext.Request.RequestUri.DnsSafeHost;
-            var parameter = string.Format("realm=\"{0}\"", host);
+            var parameter = $"realm=\"{host}\"";
             return new AuthenticationHeaderValue(Scheme, parameter);
         }
     }

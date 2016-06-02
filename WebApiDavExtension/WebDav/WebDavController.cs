@@ -204,12 +204,11 @@ namespace WebApiDavExtension.WebDav
             try
             {
                 Log.Debug("REPORT \t HRef: " + path);
+                LogReportRequest(reportRequest);
 
                 if (reportRequest.Type == ReportRequestType.PrincipalSearchPropertySet)
                 {
-                    return
-                        PrincipalSearchPropertySet(
-                            new Tuple<string, string, string>("DAV:", "displayname", "Display name"), new Tuple<string, string, string>("http://medocheck.com", "email-address", "Email address"));
+                    return PrincipalSearchPropertySetReport();
                 }
 
                 if (path == null)
@@ -218,15 +217,9 @@ namespace WebApiDavExtension.WebDav
                     return NotFound();
                 }
 
-                LogReportRequest(reportRequest);
-
                 if (reportRequest.Type == ReportRequestType.SyncCollection)
                 {
-                    var syncToken = LoadCurrentSyncToken(path);
-                    var syncResources = LoadResourcesBySyncToken(path, reportRequest.SyncToken) ?? new List<IDavResource>();
-
-                    List<Response> syncResponses = syncResources.Select(resource => reportRequest.CreateResponse(resource.HRef, resource)).ToList();
-                    return MultiStatus(syncToken, syncResponses);
+                    return SynCollectionReport(path, reportRequest);
                 }
 
                 IEnumerable<IDavResource> resources = reportRequest.Type == ReportRequestType.CalendarQuery
@@ -242,6 +235,24 @@ namespace WebApiDavExtension.WebDav
                 Log.Error("Error in REPORT", exception);
                 return InternalServerError(exception);
             }
+        }
+
+        private IHttpActionResult SynCollectionReport(string path, ReportRequest reportRequest)
+        {
+            var syncToken = LoadCurrentSyncToken(path);
+            var syncResources = LoadResourcesBySyncToken(path, reportRequest.SyncToken) ?? new List<IDavResource>();
+
+            List<Response> syncResponses =
+                syncResources.Select(resource => reportRequest.CreateResponse(resource.HRef, resource)).ToList();
+            return MultiStatus(syncToken, syncResponses);
+        }
+
+        private IHttpActionResult PrincipalSearchPropertySetReport()
+        {
+            return
+                PrincipalSearchPropertySet(
+                    new Tuple<string, string, string>("DAV:", "displayname", "Display name"),
+                    new Tuple<string, string, string>("http://medocheck.com", "email-address", "Email address"));
         }
 
         protected void LogReportRequest(ReportRequest reportRequest)

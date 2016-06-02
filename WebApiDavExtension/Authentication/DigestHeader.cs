@@ -8,7 +8,7 @@ namespace WebApiDavExtension.Authentication
         public static DigestHeader Create(string header, string method)
         {
             var digestHeader = new DigestHeader { Method = method };
-            var keyValuePairs = header.Replace("\"", String.Empty);
+            var keyValuePairs = header.Replace("\"", string.Empty);
 
             foreach (var keyValuePair in keyValuePairs.Split(','))
             {

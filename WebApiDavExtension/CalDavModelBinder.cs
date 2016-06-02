@@ -126,7 +126,6 @@ namespace WebApiDavExtension
 	        try
 	        {
 	            TrySetRequestedProperties(document);
-
 	        }
 	        catch (Exception exception)
 	        {

@@ -7,7 +7,6 @@ namespace WebApiDavExtension.example.Controllers
         // GET: Home
         public ActionResult Index()
         {
-	        //var calDavConfig = (CalDavConfiguration)ConfigurationManager.GetSection("calDavConfiguration");
             return View();
         }
     }

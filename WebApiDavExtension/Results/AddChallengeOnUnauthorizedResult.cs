@@ -16,9 +16,9 @@ namespace WebApiDavExtension.Results
             InnerResult = innerResult;
         }
 
-        public AuthenticationHeaderValue Challenge { get; private set; }
+        public AuthenticationHeaderValue Challenge { get; }
 
-        public IHttpActionResult InnerResult { get; private set; }
+        public IHttpActionResult InnerResult { get; }
 
         public async Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
         {

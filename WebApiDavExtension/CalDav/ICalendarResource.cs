@@ -1,11 +1,10 @@
-﻿using System.IO;
-using WebApiDavExtension.WebDav;
+﻿using WebApiDavExtension.WebDav;
 
 namespace WebApiDavExtension.CalDav
 {
     public interface ICalendarResource : IDavResource
     {
         [PropFind("getcontenttype", Namespace = "DAV:")]
-        string ContentType { get; } //= "text/calendar; charset=utf-8";
+        string ContentType { get; }
     }
 }

@@ -239,24 +239,35 @@ namespace WebApiDavExtension
 
             if (namespaceProperty != null && xmlTypeAttribute != null)
             {
-                string namespaceValue = namespaceProperty.GetValue(content).ToString();
-                string elementName = xmlTypeAttribute.TypeName;
-
-                XNamespace xNamespace = namespaceValue;
-
-                var xElement = new XElement(xNamespace + elementName);
-
-                foreach (var propertyInfo in content.GetType().GetProperties().Where(p => p.Name != "Namespace"))
-                {
-                    var xmlAttribute = propertyInfo.GetCustomAttribute<XmlAttributeAttribute>();
-                    var value = propertyInfo.GetValue(content);
-
-                    xElement.Add(new XAttribute(xmlAttribute.AttributeName, value));
-                }
-
-                return xElement;
+                return XmlSerializeElementWithDefaultNamespace(content, namespaceProperty, xmlTypeAttribute);
             }
 
+            return XmlSerializeElement(content);
+        }
+
+	    private static XElement XmlSerializeElementWithDefaultNamespace(object content, PropertyInfo namespaceProperty,
+	        XmlTypeAttribute xmlTypeAttribute)
+	    {
+	        string namespaceValue = namespaceProperty.GetValue(content).ToString();
+	        string elementName = xmlTypeAttribute.TypeName;
+
+	        XNamespace xNamespace = namespaceValue;
+
+	        var xElement = new XElement(xNamespace + elementName);
+
+	        foreach (var propertyInfo in content.GetType().GetProperties().Where(p => p.Name != "Namespace"))
+	        {
+	            var xmlAttribute = propertyInfo.GetCustomAttribute<XmlAttributeAttribute>();
+	            var value = propertyInfo.GetValue(content);
+
+	            xElement.Add(new XAttribute(xmlAttribute.AttributeName, value));
+	        }
+
+	        return xElement;
+        }
+
+        private static XElement XmlSerializeElement(object content)
+        {
             using (var writer = new StringWriter())
             {
                 writer.NewLine = Environment.NewLine;

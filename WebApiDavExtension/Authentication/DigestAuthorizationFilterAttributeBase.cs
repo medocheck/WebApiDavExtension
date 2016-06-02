@@ -28,25 +28,12 @@ namespace WebApiDavExtension.Authentication
 
             var password = GetPassword(header.UserName);
 
-            var hash1 = String.Format(
-                "{0}:{1}:{2}",
-                header.UserName,
-                header.Realm,
-                password).ToMd5Hash();
+            var hash1 = $"{header.UserName}:{header.Realm}:{password}".ToMd5Hash();
 
-            var hash2 = String.Format(
-                "{0}:{1}",
-                header.Method,
-                header.Uri).ToMd5Hash();
+            var hash2 = $"{header.Method}:{header.Uri}".ToMd5Hash();
 
-            var computedResponse = String.Format(
-                "{0}:{1}:{2}:{3}:{4}:{5}",
-                hash1,
-                header.Nonce,
-                header.NounceCounter,
-                header.Cnonce,
-                "auth",
-                hash2).ToMd5Hash();
+            var computedResponse =
+                $"{hash1}:{header.Nonce}:{header.NounceCounter}:{header.Cnonce}:{"auth"}:{hash2}".ToMd5Hash();
 
             return header.Response.Equals(computedResponse, StringComparison.Ordinal)
                 ? header.UserName

@@ -14,9 +14,9 @@ namespace WebApiDavExtension.Results
             Request = request;
         }
 
-        public string ReasonPhrase { get; private set; }
+        public string ReasonPhrase { get; }
 
-        public HttpRequestMessage Request { get; private set; }
+        public HttpRequestMessage Request { get; }
 
         public Task<HttpResponseMessage> ExecuteAsync(CancellationToken cancellationToken)
         {

@@ -146,23 +146,11 @@ namespace WebApiDavExtension.CalDav
 
 	            if (found == 1)
 	            {
-	                var calendars = LoadCalendarsForPrincipal(principalId);
-
-	                foreach (var calendar in calendars)
-	                {
-	                    var events = LoadEventsFromCalendar(principalId, calendar.ExternalId);
-                        calendar.Resources.AddRange(events);
-
-                        resources.Add(calendar);
-                    }
+	                MultigetCalendarsFromPrincipal(principalId, resources);
 	            }
-                else if (found == 2)
+	            else if (found == 2)
                 {
-                    var calendar = LoadCalendar(principalId, calendarId);
-                    var events = LoadEventsFromCalendar(principalId, calendar.ExternalId);
-                    calendar.Resources.AddRange(events);
-
-                    resources.Add(calendar);
+                    MultigetEvents(principalId, calendarId, resources);
                 }
                 else
                 {
@@ -173,6 +161,28 @@ namespace WebApiDavExtension.CalDav
 
             return resources;
         }
+
+	    private void MultigetEvents(string principalId, string calendarId, List<IDavResource> resources)
+	    {
+	        var calendar = LoadCalendar(principalId, calendarId);
+	        var events = LoadEventsFromCalendar(principalId, calendar.ExternalId);
+	        calendar.Resources.AddRange(events);
+
+	        resources.Add(calendar);
+	    }
+
+	    private void MultigetCalendarsFromPrincipal(string principalId, List<IDavResource> resources)
+	    {
+	        var calendars = LoadCalendarsForPrincipal(principalId);
+
+	        foreach (var calendar in calendars)
+	        {
+	            var events = LoadEventsFromCalendar(principalId, calendar.ExternalId);
+	            calendar.Resources.AddRange(events);
+
+	            resources.Add(calendar);
+	        }
+	    }
 
 	    public override bool RemoveResourse(string path)
 	    {

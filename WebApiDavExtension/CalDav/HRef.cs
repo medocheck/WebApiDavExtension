@@ -2,13 +2,11 @@
 
 namespace WebApiDavExtension.CalDav
 {
-    //[XmlType("href", Namespace = "DAV:")]
     [XmlRoot("href", Namespace = "DAV:")]
     public class HRef
     {
         public HRef()
         {
-
         }
 
         public HRef(string reference)
