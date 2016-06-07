@@ -89,20 +89,41 @@ namespace WebApiDavExtension
 
 	    private static void CreateTimeRangeFilter(IList<XElement> elements, ReportRequest reportRequest)
 		{
-			DateTime startDateTime;
-			DateTime endDateTime;
-			var timerange = elements.Descendants(Namespaces.Caldav + "time-range").First();
+	        var timerange = elements.Descendants(Namespaces.Caldav + "time-range").First();
 			reportRequest.TimeRangeFilter = new TimeRange();
 
-			if (DateTime.TryParseExact(timerange.Attribute("start").Value, "yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture, DateTimeStyles.None,  out startDateTime))
-			{
-				reportRequest.TimeRangeFilter.Start = startDateTime;
-			}
+	        var startTime = timerange.Attribute("start").Value;
 
-			if (DateTime.TryParseExact(timerange.Attribute("end").Value, "yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture, DateTimeStyles.None, out endDateTime))
-			{
-				reportRequest.TimeRangeFilter.End = endDateTime;
-			}
+            //todo: refactor
+
+	        if (!string.IsNullOrEmpty(startTime))
+	        {
+	            DateTime startDateTime;
+	            if (DateTime.TryParseExact(timerange.Attribute("start").Value, "yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture, DateTimeStyles.None, out startDateTime))
+                {
+                    reportRequest.TimeRangeFilter.Start = startDateTime;
+                }
+	        }
+	        else
+	        {
+	            reportRequest.TimeRangeFilter.Start = DateTime.Now.Date;
+	        }
+
+	        var endTime = timerange.Attribute("end")?.Value;
+
+	        if (!string.IsNullOrEmpty(endTime))
+	        {
+	            DateTime endDateTime;
+	            if (DateTime.TryParseExact(endTime, "yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture, DateTimeStyles.None, out endDateTime))
+                {
+                    reportRequest.TimeRangeFilter.End = endDateTime;
+                }
+	        }
+	        else
+	        {
+                reportRequest.TimeRangeFilter.End = DateTime.MaxValue;
+            }
+                
 		}
 
 		private void CreatePropFilter(IList<XElement> elements, ReportRequest reportRequest)
