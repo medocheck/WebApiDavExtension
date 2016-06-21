@@ -226,7 +226,13 @@ namespace WebApiDavExtension.WebDav
                     ? QueryResources(path, reportRequest)
                     : MultigetResources(path, reportRequest);
 
-                List<Response> responses = resources.Select(resource => reportRequest.CreateResponse(resource.HRef, resource)).ToList();
+                List<Response> responses = new List<Response>();
+
+                var davResources = resources as IDavResource[] ?? resources.ToArray();
+                if (davResources.Any())
+                {
+                    responses.AddRange(davResources.Select(resource => reportRequest.CreateResponse(resource.HRef, resource)));
+                }
 
                 return MultiStatus(responses);
             }

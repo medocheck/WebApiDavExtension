@@ -155,7 +155,11 @@ namespace WebApiDavExtension.CalDav
                 else
                 {
                     var resource = LoadEvent(principalId, calendarId, eventId);
-                    resources.Add(resource);
+
+                    if (resource != null)
+                    {
+                        resources.Add(resource);
+                    }
                 }
             }
 
