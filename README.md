@@ -137,3 +137,13 @@ An extension for the .Net WebApi to communicate with Dav (CalDav) clients.
   public class CalendarController : CalDavController
   {...}
   ```
+  
+7. Create Model Classes
+
+  * For a calendar model implement the ICalendarCollection interface
+  * For en event model implement the ICalendarResource interface
+  * For a principal model implement the IDavPrincipal interface
+  
+Add a PropFind Attribute to Properties that should be returned by WebDav requests. The Propfind Attribute contains the name and the namespace of the requested WebDav Property. 
+
+By using the PropFind Attribute to mark WebDav Properties you can extend the Extension or create youre own Properties.
