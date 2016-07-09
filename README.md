@@ -8,7 +8,8 @@ An extension for the .Net WebApi to communicate with Dav (CalDav) clients.
 **tested with**
 * Thunderbird Lightning
 * Android CalDav-sync
-* Os X iCalendar *not working*
+* Os X iCalendar
+* IOS Calendar
 
 ## Get Started
 
